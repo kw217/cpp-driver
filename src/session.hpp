@@ -145,6 +145,7 @@ private:
 
   static void on_resolve(MultiResolver<Session*>::Resolver* resolver);
   static void on_resolve_done(MultiResolver<Session*>* resolver);
+  static void on_local_resolve(Resolver<Session*>* resolver);
 
 #if UV_VERSION_MAJOR >= 1
   struct ResolveNameData {
@@ -224,6 +225,8 @@ private:
 
   HostMap hosts_;
   uv_mutex_t hosts_mutex_;
+  Address local_address_;
+  bool have_local_address_;
 
   IOWorkerVec io_workers_;
   ScopedPtr<AsyncQueue<MPMCQueue<RequestHandler*> > > request_queue_;

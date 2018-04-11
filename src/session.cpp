@@ -151,6 +151,7 @@ namespace cass {
 Session::Session()
     : state_(SESSION_STATE_CLOSED)
     , connect_error_code_(CASS_OK)
+    , have_local_address_(true)
     , current_host_mark_(true)
     , pending_pool_count_(0)
     , pending_workers_count_(0)
@@ -510,6 +511,18 @@ void Session::on_event(const SessionEvent& event) {
         }
       }
 
+      if (config_.local_address().empty()) {
+        local_address_ = Address();
+        have_local_address_ = true;
+      } else if (Address::from_string(config_.local_address(), 0,
+                                      &local_address_)) {
+        have_local_address_ = true;
+      } else {
+        have_local_address_ = false;
+        Resolver::resolve(loop(), config_.local_address, 0, this,
+                          on_local_resolve, config_.resolve_timeout_ms());
+      }
+
       break;
     }
 
@@ -572,6 +585,22 @@ void Session::on_resolve(MultiResolver<Session*>::Resolver* resolver) {
 
 void Session::on_resolve_done(MultiResolver<Session*>* resolver) {
   resolver->data()->internal_connect();
+}
+
+void Session::on_local_resolve(Resolver<Session*>* resolver) {
+  Session* session = resolver->data();
+  if (resolver->is_success()) {
+    AddressVec addresses = resolver->addresses();
+    // Just take the first; we can only bind one!
+    session.local_address_ = addresses[0];
+    session.have_local_address_ = true;
+  } else if (resolver->is_timed_out()) {
+    LOG_ERROR("Timed out attempting to resolve address for %s:%d\n",
+              resolver->hostname().c_str(), resolver->port());
+  } else {
+    LOG_ERROR("Unable to resolve address for %s:%d\n",
+              resolver->hostname().c_str(), resolver->port());
+  }
 }
 
 void Session::execute(const RequestHandler::Ptr& request_handler) {

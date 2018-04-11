@@ -98,6 +98,7 @@ public:
              const Config& config,
              Metrics* metrics,
              const Host::ConstPtr& host,
+             const Adddress* local_address,
              const std::string& keyspace,
              int protocol_version,
              Listener* listener);

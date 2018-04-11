@@ -205,6 +205,7 @@ void ControlConnection::reconnect(bool retry_current_host) {
                                session_->config(),
                                session_->metrics(),
                                current_host_,
+                               session_->local_address(),
                                "", // No keyspace
                                protocol_version_,
                                this);

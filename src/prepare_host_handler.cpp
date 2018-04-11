@@ -74,6 +74,7 @@ void PrepareHostHandler::prepare(Callback callback) {
                                session_->config(),
                                session_->metrics(),
                                host_,
+                               session_->local_address(),
                                "", // No keyspace
                                protocol_version_,
                                this);

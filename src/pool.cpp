@@ -332,6 +332,7 @@ void Pool::spawn_connection() {
     Connection* connection =
         new Connection(loop_, config_, metrics_,
                        host_,
+                       session_->local_address() @@@ to fix,
                        io_worker_->keyspace(),
                        io_worker_->protocol_version(),
                        this);

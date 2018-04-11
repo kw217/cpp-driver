@@ -124,6 +124,10 @@ public:
     return control_connection_.cassandra_version();
   }
 
+  const Address* local_address() const {
+    return config_.local_address().empty() ? NULL : &local_address_;
+  }
+
 private:
   void clear(const Config& config);
   int init();
@@ -146,6 +150,8 @@ private:
   static void on_resolve(MultiResolver<Session*>::Resolver* resolver);
   static void on_resolve_done(MultiResolver<Session*>* resolver);
   static void on_local_resolve(Resolver<Session*>* resolver);
+
+  void on_resolve_change();
 
 #if UV_VERSION_MAJOR >= 1
   struct ResolveNameData {
@@ -225,6 +231,7 @@ private:
 
   HostMap hosts_;
   uv_mutex_t hosts_mutex_;
+  bool done_hosts_;
   Address local_address_;
   bool have_local_address_;
 

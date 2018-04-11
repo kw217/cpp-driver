@@ -213,6 +213,7 @@ Connection::Connection(uv_loop_t* loop,
                        const Config& config,
                        Metrics* metrics,
                        const Host::ConstPtr& host,
+                       const Address* local_address,
                        const std::string& keyspace,
                        int protocol_version,
                        Listener* listener)
@@ -242,6 +243,12 @@ Connection::Connection(uv_loop_t* loop,
                       config.tcp_keepalive_enable() ? 1 : 0,
                       config.tcp_keepalive_delay_secs()) != 0) {
     LOG_WARN("Unable to set tcp keepalive");
+  }
+
+  if (local_address) {
+    if (uv_tcp_bind(&socket_, local_address->addr(), 0)) {
+      LOG_WARN("Unable to bind local address");
+    }
   }
 
   SslContext* ssl_context = config_.ssl_context();
